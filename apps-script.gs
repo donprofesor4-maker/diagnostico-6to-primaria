@@ -1,0 +1,59 @@
+/**
+ * Web app compartido para diagnósticos de Computación (4.º y 6.º primaria, 2.º secundaria).
+ * Detecta el campo "grado" en el JSON y escribe en la pestaña correspondiente:
+ *   - "4to" → pestaña "Respuestas"
+ *   - "2do" → pestaña "Respuestas 2do Sec"
+ *   - "6to" → pestaña "Respuestas 6to Prim"
+ *
+ * Implementar como: Implementar > Nueva implementación > App web
+ *   - Ejecutar como: Yo (tu cuenta)
+ *   - Acceso: Cualquier usuario
+ * Copia la URL que termina en /exec y pégala en index.html (SCRIPT_URL).
+ */
+
+var CAMPOS_4TO = ["timestamp","nombre","grupo","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10",
+  "r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","aciertos"];
+
+var CAMPOS_2DO = ["timestamp","nombre","grupo","grado","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10",
+  "r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29","r30","aciertos"];
+
+var CAMPOS_6TO = CAMPOS_2DO;
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var grado = data.grado || "4to";
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheetName = (grado === "2do") ? "Respuestas 2do Sec" :
+                    (grado === "6to") ? "Respuestas 6to Prim" : "Respuestas";
+    var sheet = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
+
+    var campos = (grado === "2do") ? CAMPOS_2DO :
+                 (grado === "6to") ? CAMPOS_6TO : CAMPOS_4TO;
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(campos);
+    }
+
+    var row = campos.map(function(k){ return data[k] !== undefined ? data[k] : ''; });
+    row[0] = new Date();
+    sheet.appendRow(row);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ok:true, grado:grado}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ok:false, error:String(err)}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doGet() {
+  return ContentService.createTextOutput('Diagnóstico activo (4.º y 6.º primaria, 2.º sec). Usa POST.');
+}

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DonBOT · Informática 6.º Primaria</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rosa:#ff7ac2; --lila:#a78bfa; --azul:#60a5fa; --verde:#34d399;
+    --amarillo:#fcd34d; --naranja:#fb923c; --tinta:#2b2350;
+    --fondo:#fef3ff; --blanco:#fff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Baloo 2', system-ui, sans-serif;
+    background:linear-gradient(160deg,#fff0f6 0%,#f3e8ff 45%,#e0f2fe 100%);
+    min-height:100vh; color:var(--tinta);
+    overflow-x:hidden;
+  }
+  .cielo{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+  }
+  .cielo span{
+    position:absolute; display:block; border-radius:50%;
+    animation:flota 12s ease-in-out infinite;
+  }
+  @keyframes flota{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-22px) rotate(8deg);}
+  }
+  .wrap{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:20px 16px 80px;}
+
+  .pantalla{display:none; animation:aparece .4s ease;}
+  .pantalla.activa{display:block;}
+  @keyframes aparece{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+
+  .mascota{
+    font-size:74px; text-align:center; line-height:1.1; margin:6px 0 4px;
+    filter:drop-shadow(0 8px 14px rgba(167,139,250,.45));
+    animation:botcito 3s ease-in-out infinite;
+  }
+  @keyframes botcito{
+    0%,100%{transform:translateY(0) rotate(-3deg);}
+    50%{transform:translateY(-10px) rotate(3deg);}
+  }
+  .card{
+    background:rgba(255,255,255,.92);
+    border-radius:28px; padding:28px 24px;
+    box-shadow:0 18px 50px rgba(91,62,160,.16);
+    border:3px solid var(--blanco);
+    backdrop-filter:blur(4px);
+  }
+  h1{
+    font-weight:800; font-size:clamp(28px,6vw,44px); line-height:1.05;
+    background:linear-gradient(90deg,#e11d8f,#8b5cf6 55%,#2563eb);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-align:center;
+  }
+  .sub{text-align:center; font-size:17px; color:#6b5d9e; margin-top:6px; font-weight:600;}
+  .sub b{background:#ffe4f1; padding:1px 8px; border-radius:10px; color:#d61f8c;}
+
+  .campo{margin-top:20px;}
+  .campo label{font-weight:700; font-size:16px; display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .campo input{
+    width:100%; padding:15px 18px; font-family:inherit; font-size:19px; font-weight:600;
+    border:3px solid #e6dcff; border-radius:18px; outline:none; background:#fbf7ff;
+    transition:border .2s;
+  }
+  .campo input:focus{border-color:var(--lila); background:#fff;}
+
+  .btn{
+    display:block; width:100%; margin-top:22px; padding:17px;
+    font-family:inherit; font-size:21px; font-weight:800; color:#fff; cursor:pointer;
+    border:none; border-radius:22px;
+    background:linear-gradient(90deg,#f472b6,#8b5cf6,#60a5fa);
+    box-shadow:0 10px 24px rgba(139,92,246,.4);
+    transition:transform .12s, box-shadow .12s;
+    letter-spacing:.3px;
+  }
+  .btn:hover{transform:translateY(-2px) scale(1.01); box-shadow:0 14px 30px rgba(139,92,246,.5);}
+  .btn:active{transform:scale(.97);}
+  .btn:disabled{filter:grayscale(.5) opacity(.6); cursor:not-allowed; transform:none;}
+
+  .barra{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .pista{flex:1; height:16px; background:#e9dcff; border-radius:99px; overflow:hidden;}
+  .relleno{
+    height:100%; width:0%;
+    background:linear-gradient(90deg,var(--amarillo),var(--naranja),var(--rosa));
+    border-radius:99px; transition:width .4s ease;
+  }
+  .cuenta{font-weight:800; font-size:15px; color:#8b5cf6; white-space:nowrap;}
+  .emojiQ{font-size:52px; text-align:center; margin-bottom:8px;}
+  .pregunta{font-size:clamp(19px,4.4vw,24px); font-weight:700; text-align:center; line-height:1.3; margin-bottom:20px;}
+
+  .opciones{display:flex; flex-direction:column; gap:12px;}
+  .opcion{display:flex; gap:14px; align-items:flex-start; cursor:pointer; transition:transform .1s, border-color .15s, background .15s;}
+  .opcion input{display:none;}
+  .opcion .letra{
+    flex-shrink:0; width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+    border-radius:14px; font-weight:800; font-size:19px; color:#fff;
+    background:var(--vbb, #a78bfa); transition:transform .15s, box-shadow .15s;
+  }
+  .opcion .texto{flex:1; font-size:17px; font-weight:600; padding-top:9px; line-height:1.35;}
+  .opcion:hover{transform:translateX(4px);}
+  .opcion:has(input:checked){
+    background:var(--vbg, #f3e8ff); border-color:var(--vtt, #a78bfa);
+    border-radius:18px; padding:0 4px;
+  }
+  .opcion:has(input:checked) .letra{
+    transform:scale(1.15); box-shadow:0 4px 14px rgba(0,0,0,.15);
+  }
+
+  .status{display:none; margin-top:12px; padding:12px 16px; border-radius:14px; font-weight:600; font-size:15px; text-align:center;}
+  .status.show{display:block;}
+  .status.ok{background:#d1fae5; color:#065f46;}
+  .status.bad{background:#ffe4e6; color:#9f1239;}
+
+  .marca{font-size:80px; text-align:center; line-height:1.1;}
+  .nota{font-size:clamp(26px,5vw,36px); font-weight:800; text-align:center; margin:6px 0 2px;}
+  .estrellas{text-align:center; font-size:26px; letter-spacing:4px; margin:4px 0 10px;}
+  .detalle{text-align:center; font-size:18px; color:#6b5d9e; font-weight:600;}
+  .mensaje{text-align:center; font-size:16px; color:#6b5d9e; margin-top:14px; font-weight:600; line-height:1.4;}
+
+  .acciones{display:flex; gap:10px; margin-top:18px;}
+  .acciones .btn{flex:1; font-size:17px; padding:14px 10px; margin-top:0;}
+
+  canvas#confeti{position:fixed; inset:0; pointer-events:none; z-index:9999;}
+
+  @media(max-width:480px){
+    .card{padding:22px 16px;}
+    .acciones{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<canvas id="confeti"></canvas>
+<div class="cielo" id="cielo"></div>
+
+<div class="wrap">
+  <!-- ====== INTRO ====== -->
+  <div class="pantalla activa" id="intro">
+    <div class="mascota">🤖</div>
+    <div class="card">
+      <h1>Misión Diagnóstico<br>6.º Primaria</h1>
+      <p class="sub">Escribe tu <b>nombre</b> y <b>grupo</b> para comenzar.</p>
+
+      <div class="campo">
+        <label>✍️ Tu nombre</label>
+        <input type="text" id="nombre" placeholder="Escribe tu nombre" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label>🏫 Tu grupo</label>
+        <input type="text" id="grupo" placeholder="Ej. 6°A" autocomplete="off">
+      </div>
+
+      <button class="btn" id="btnIniciar">Comenzar la misión 🚀</button>
+      <div class="status" id="statusIntro"></div>
+    </div>
+  </div>
+
+  <!-- ====== PREGUNTA ====== -->
+  <div class="pantalla" id="pregunta">
+    <div class="barra">
+      <div class="pista"><div class="relleno" id="relleno"></div></div>
+      <div class="cuenta" id="cuenta">Pregunta 1/30</div>
+    </div>
+    <div class="card">
+      <div class="emojiQ" id="emojiQ">🤖</div>
+      <div class="pregunta" id="preguntaTxt"></div>
+      <div class="opciones" id="opciones"></div>
+      <button class="btn" id="btnSiguiente">Siguiente ➡️</button>
+    </div>
+  </div>
+
+  <!-- ====== RESULTADO ====== -->
+  <div class="pantalla" id="resultado">
+    <div class="card" style="text-align:center;">
+      <div class="marca" id="marca">🏆</div>
+      <div class="nota" id="nota"></div>
+      <div class="estrellas" id="estrellas"></div>
+      <div class="detalle" id="detalle"></div>
+      <div class="mensaje" id="mensaje"></div>
+
+      <div class="acciones">
+        <button class="btn" id="btnEnviar">Enviar mis respuestas 📡</button>
+        <button class="btn" id="btnRespaldo" style="background:linear-gradient(90deg,#a78bfa,#60a5fa);">Descargar respaldo 💾</button>
+      </div>
+      <div class="status" id="statusEnvio"></div>
+
+      <button class="btn" id="btnRepetir" style="background:linear-gradient(90deg,#34d399,#60a5fa); margin-top:12px;">🔄 Reintentar</button>
+    </div>
+  </div>
+
+  <!-- ====== LISTO ====== -->
+  <div class="pantalla" id="listo">
+    <div class="card" style="text-align:center;">
+      <div class="marca">🎉</div>
+      <h1 style="font-size:34px;">¡Listo, gracias!</h1>
+      <p class="sub" style="margin-top:10px;">Tus respuestas se guardaron. ¡Terminaste la misión, superhéroe del teclado! 🦸</p>
+      <button class="btn" id="btnCerrar">Cerrar esta página</button>
+    </div>
+  </div>
+
+  <div class="mini" id="respuesta"></div>
+</div>
+
+<script>
+// ====== CONFIGURACIÓN ======
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_nyQ7Fpl_c4O54AAAoDqGEZfQF6hG0Keufeni7CTn6Hb16xPugSdN5w9gZ3VllITMRw/exec";
+
+// 30 preguntas + timestamp + nombre + grupo + grado + aciertos
+var CAMPOS = ["timestamp","nombre","grupo","grado","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10",
+  "r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29","r30","aciertos"];
+
+// ====== PREGUNTAS (30, 4 opciones — correcta va al final) ======
+var PREGUNTAS = [
+  {e:"🌿", q:"¿Qué es la biodiversidad?", o:["La variedad de seres vivos que existen","Una aplicación para dibujar","Un tipo de computadora","Una carpeta digital"], c:"a"},
+  {e:"🌍", q:"¿Qué es un ecosistema?", o:["Un programa de presentaciones","El conjunto de seres vivos y el medio donde habitan","Una red social","Un archivo de texto"], c:"b"},
+  {e:"🦋", q:"¿Cuál es un ejemplo de biodiversidad?", o:["Una computadora y una impresora","Una carpeta con documentos","Diferentes plantas, animales y microorganismos","Una presentación con diapositivas"], c:"c"},
+  {e:"🌱", q:"¿Cuál actividad ayuda a conservar la biodiversidad?", o:["Tirar basura en los ríos","Destruir los hábitats","Proteger plantas y animales","Desperdiciar agua"], c:"c"},
+  {e:"⚠️", q:"¿Cuál es una amenaza para la biodiversidad?", o:["La reforestación","La contaminación","El reciclaje","El cuidado del agua"], c:"b"},
+  {e:"♻️", q:"¿Qué significa utilizar responsablemente los recursos naturales?", o:["Usarlos sin límite","Evitar cualquier uso de ellos","Aprovecharlos sin poner en riesgo su existencia","Venderlos por internet"], c:"c"},
+  {e:"🌎", q:"¿Cuál es una acción sostenible?", o:["Mantener encendidos los equipos sin utilizarlos","Reutilizar materiales y ahorrar energía","Imprimir todos los documentos","Utilizar más plástico"], c:"b"},
+  {e:"🔋", q:"¿Qué podemos hacer para ahorrar energía en el laboratorio?", o:["Dejar encendidas las computadoras","Apagar los equipos cuando no se utilizan","Aumentar el brillo al máximo","Encender todos los monitores"], c:"b"},
+  {e:"🌐", q:"¿Cuál herramienta sirve para buscar información en internet?", o:["Navegador web","Calculadora","Papelera de reciclaje","Reproductor de música"], c:"a"},
+  {e:"🔍", q:"¿Cuál búsqueda es más precisa?", o:["Animales","Cosas de la naturaleza","Animales en peligro de extinción en México","Tarea de ciencias"], c:"c"},
+  {e:"📚", q:"¿Qué debemos revisar antes de utilizar información encontrada en internet?", o:["Que la página tenga muchos colores","El autor, la fecha y la fuente","Que sea el primer resultado","Que tenga anuncios"], c:"b"},
+  {e:"🔄", q:"¿Por qué debemos comparar información de diferentes páginas?", o:["Para abrir muchas ventanas","Para comprobar que la información sea confiable","Para gastar más internet","Para llenar la memoria del equipo"], c:"b"},
+  {e:"📝", q:"¿Cuál dato debemos incluir cuando usamos información de internet?", o:["La fuente consultada","Nuestra contraseña","Nuestra dirección personal","El nombre de todos nuestros compañeros"], c:"a"},
+  {e:"🎨", q:"¿Qué herramienta puede utilizarse para elaborar un tríptico digital?", o:["Canva","Calculadora","Papelera","Antivirus"], c:"a"},
+  {e:"🗂️", q:"¿Qué es un tríptico?", o:["Un documento dividido en tres partes o secciones","Una hoja de cálculo","Una contraseña de tres números","Un tipo de computadora"], c:"a"},
+  {e:"✨", q:"¿Qué debe tener un buen tríptico?", o:["Muchísimo texto y pocas imágenes","Información breve, organizada e imágenes relacionadas","Solamente imágenes","Contraseñas y datos personales"], c:"b"},
+  {e:"📽️", q:"¿Qué herramienta puede utilizarse para crear una presentación?", o:["PowerPoint","Papelera","Explorador de archivos","Calculadora"], c:"a"},
+  {e:"🖼️", q:"¿Qué es una diapositiva?", o:["Cada una de las páginas de una presentación","Una carpeta de la computadora","Una página de internet","Una pieza del teclado"], c:"a"},
+  {e:"💡", q:"¿Qué conviene colocar en una diapositiva?", o:["Párrafos demasiado extensos","Ideas principales e imágenes relacionadas","Todas las fuentes y colores disponibles","Información sin revisar"], c:"b"},
+  {e:"🎬", q:"¿Para qué sirven las transiciones en una presentación?", o:["Para cambiar de una diapositiva a otra con un efecto","Para borrar archivos","Para conectarse a internet","Para cambiar la contraseña"], c:"a"},
+  {e:"📹", q:"¿Qué herramienta permite realizar una videollamada?", o:["Google Meet","Paint","Calculadora","Bloc de notas"], c:"a"},
+  {e:"🎤", q:"¿Cuál comportamiento es correcto durante una videollamada escolar?", o:["Interrumpir constantemente","Compartir enlaces desconocidos","Mantener el micrófono apagado mientras otra persona habla","Escribir mensajes ofensivos"], c:"c"},
+  {e:"💬", q:"¿Qué significa comunicarse responsablemente en internet?", o:["Escribir cualquier cosa sin pensar","Tratar a los demás con respeto y cuidar la información compartida","Compartir contraseñas","Publicar información personal"], c:"b"},
+  {e:"🔐", q:"¿Qué es una contraseña segura?", o:["Una contraseña como 123456","El nombre del alumno","Una combinación de letras, números y símbolos","La fecha de nacimiento"], c:"c"},
+  {e:"🛡️", q:"¿Cuál contraseña es más segura?", o:["12345678","escuela","Jorge2015","T6#mP9!qL2"], c:"d"},
+  {e:"🚨", q:"Si recibes un enlace desconocido, ¿qué debes hacer?", o:["Abrirlo inmediatamente","Compartirlo con todos","No abrirlo y consultar con un adulto o docente","Escribir tu contraseña"], c:"c"},
+  {e:"👣", q:"¿Qué es la huella digital?", o:["La suciedad que queda en la pantalla","El rastro de nuestras actividades en internet","Una herramienta para dibujar","Una carpeta de fotografías"], c:"b"},
+  {e:"📂", q:"¿Para qué sirve una carpeta digital?", o:["Para organizar y guardar archivos","Para aumentar el volumen","Para encender la computadora","Para conectarse a internet"], c:"a"},
+  {e:"⏻", q:"¿Qué debemos hacer antes de apagar la computadora?", o:["Desconectarla directamente","Guardar el trabajo y cerrar los programas","Borrar todos los archivos","Apagar solamente el monitor"], c:"b"},
+  {e:"💾", q:"¿Qué combinación de teclas permite guardar un documento?", o:["Ctrl + P","Ctrl + C","Ctrl + G","Ctrl + V"], c:"c"}
+];
+
+for (var i = 0; i < PREGUNTAS.length; i++){ PREGUNTAS[i].id = i + 1; }
+
+var LETRAS = ["a","b","c","d"];
+
+// ====== Opciones barajadas ======
+var CORRECTAS = PREGUNTAS.map(function(p){ return p.o[LETRAS.indexOf(p.c)]; });
+
+function mezclarPreguntas(){
+  for (var i = 0; i < PREGUNTAS.length; i++){
+    var a = PREGUNTAS[i].o.slice();
+    for (var j = a.length - 1; j > 0; j--){
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = a[j]; a[j] = a[k]; a[k] = tmp;
+    }
+    PREGUNTAS[i].o = a;
+    PREGUNTAS[i].c = LETRAS[a.indexOf(CORRECTAS[i])];
+  }
+}
+
+function capturarMezcla(){
+  return PREGUNTAS.map(function(p){ return p.o.slice(); });
+}
+
+function aplicarMezcla(mezcla){
+  for (var i = 0; i < PREGUNTAS.length && i < mezcla.length; i++){
+    if (mezcla[i] && mezcla[i].length === LETRAS.length){
+      PREGUNTAS[i].o = mezcla[i].slice();
+      PREGUNTAS[i].c = LETRAS[mezcla[i].indexOf(CORRECTAS[i])];
+    }
+  }
+}
+
+var estado = null;
+var ultimaPantalla = "intro";
+
+function pantalla(id){
+  var ps = document.querySelectorAll(".pantalla");
+  for (var i = 0; i < ps.length; i++){ ps[i].classList.remove("activa"); }
+  document.getElementById(id).classList.add("activa");
+  ultimaPantalla = id;
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function texto(id){ var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+function setStatus(id, msg, kind){
+  var s = document.getElementById(id);
+  s.textContent = msg;
+  s.className = "status show " + (kind || "");
+}
+
+// ====== Estrellas decorativas ======
+(function(){
+  var cielo = document.getElementById("cielo");
+  var emo = ["⭐","✨","🌟","🪐","🤖","💻","🚀","🛸"];
+  for (var i = 0; i < 18; i++){
+    var sp = document.createElement("span");
+    sp.textContent = emo[Math.floor(Math.random() * emo.length)];
+    sp.style.left = Math.random() * 96 + "%";
+    sp.style.top = Math.random() * 96 + "%";
+    sp.style.fontSize = (14 + Math.random() * 22) + "px";
+    sp.style.opacity = 0.45;
+    sp.style.animationDelay = (Math.random() * 8) + "s";
+    cielo.appendChild(sp);
+  }
+})();
+
+// ====== Colores de pregunta ======
+var colores = [
+  ["#f472b6","#ffe4f1"],
+  ["#a78bfa","#f3e8ff"],
+  ["#60a5fa","#e0f2fe"],
+  ["#34d399","#d1fae5"],
+  ["#fb923c","#ffedd5"]
+];
+
+function renderPregunta(idx){
+  var p = PREGUNTAS[idx];
+  var mate = colores[idx % colores.length];
+  var css = ".opcion{--vtt:" + mate[0] + ";--vbg:" + mate[1] + ";}";
+  var st = document.getElementById("estiloOpciones");
+  if (!st){ st = document.createElement("style"); st.id = "estiloOpciones"; document.head.appendChild(st); }
+  st.textContent = css;
+
+  document.getElementById("emojiQ").textContent = p.e;
+  document.getElementById("preguntaTxt").textContent = (idx + 1) + ". " + p.q;
+  document.getElementById("cuenta").textContent = "Pregunta " + (idx + 1) + "/" + PREGUNTAS.length;
+  document.getElementById("relleno").style.width = ((idx + 1) / PREGUNTAS.length * 100) + "%";
+
+  var caja = document.getElementById("opciones");
+  caja.innerHTML = "";
+  var eleccion = estado.respuestas[idx] || "";
+  for (var i = 0; i < p.o.length; i++){
+    var letra = LETRAS[i];
+    var div = document.createElement("label");
+    div.className = "opcion";
+    div.innerHTML = '<input type="radio" name="q' + p.id + '" value="' + letra + '"' + (eleccion === letra ? ' checked' : '') + '>' +
+      '<div class="letra">' + letra.toUpperCase() + '</div>' +
+      '<div class="texto">' + p.o[i] + "</div>";
+    caja.appendChild(div);
+  }
+  var inputs = caja.querySelectorAll("input");
+  for (var i = 0; i < inputs.length; i++){
+    inputs[i].addEventListener("change", function(){
+      estado.respuestas[estado.idx] = this.value;
+      guardar();
+    });
+  }
+  document.getElementById("btnSiguiente").textContent = (idx + 1 === PREGUNTAS.length) ? "Ver mi resultado 🏆" : "Siguiente ➡️";
+}
+
+// ====== Persistencia ======
+var CLAVE_STATE = "donbot_diag_6to_prim";
+function guardar(){
+  try { localStorage.setItem(CLAVE_STATE, JSON.stringify(estado)); } catch(e){}
+}
+function cargar(){
+  try {
+    var datos = JSON.parse(localStorage.getItem(CLAVE_STATE));
+    if (datos && datos.v === 1){ return datos; }
+  } catch(e){}
+  return null;
+}
+
+// ====== Flujo ======
+document.getElementById("btnIniciar").addEventListener("click", function(){
+  var nombre = texto("nombre");
+  var grupo = texto("grupo");
+  if (!nombre){ setStatus("statusIntro", "Primero escribe tu nombre, explorador ✍️", "bad"); return; }
+  if (!grupo){ setStatus("statusIntro", "No olvides tu grupo (ej. 2°A)", "bad"); return; }
+  mezclarPreguntas();
+  estado = { v:1, nombre:nombre, grupo:grupo, idx:0, respuestas:[], mezcla: capturarMezcla() };
+  guardar();
+  pantalla("pregunta");
+  renderPregunta(0);
+});
+
+document.getElementById("btnSiguiente").addEventListener("click", function(){
+  if (!estado) return;
+  if (!estado.respuestas[estado.idx]){
+    document.getElementById("btnSiguiente").textContent = "Elige una respuesta primero 👆";
+    return;
+  }
+  estado.idx++;
+  if (estado.idx >= PREGUNTAS.length){
+    mostrarResultado();
+  } else {
+    renderPregunta(estado.idx);
+  }
+});
+
+function calcularAciertos(){
+  var aciertos = 0;
+  for (var i = 0; i < PREGUNTAS.length; i++){
+    if (estado.respuestas[i] === PREGUNTAS[i].c){ aciertos++; }
+  }
+  return aciertos;
+}
+
+function mostrarResultado(){
+  var aciertos = calcularAciertos();
+  var pct = aciertos / PREGUNTAS.length;
+  var marca, nota, mensaje, estrellas = "";
+  var tipo = "🙂";
+  if (pct >= 0.9){ marca = "🏆"; nota = "¡Súper campeón!"; tipo = "🤩"; }
+  else if (pct >= 0.7){ marca = "🎖️"; nota = "¡Muy bien!"; tipo = "😃"; }
+  else if (pct >= 0.5){ marca = "🌟"; nota = "¡Bien hecho!"; tipo = "🙂"; }
+  else { marca = "💪"; nota = "¡Sigue intentando!"; tipo = "🤗"; }
+
+  var n = Math.round(aciertos / PREGUNTAS.length * 5);
+  for (var i = 0; i < 5; i++){ estrellas += (i < n) ? "⭐" : "☆"; }
+
+  var msjs = [
+    "Cada error es un paso del camino. ¡Practica y la próxima vuelas! 🚀",
+    "Ya sabes mucho. Repasa las partes difíciles y lo lograrás.",
+    "Vas por buen camino, ¡sigue así! 📚",
+    "¡Eres muy bueno en esto de la computación!",
+    "¡Increíble! Tienes el cerebro de un verdadero robot. 🤖❤️"
+  ];
+  var nivel = Math.max(0, Math.min(4, Math.floor(pct * 5)));
+  mensaje = msjs[nivel];
+
+  if (pct >= 0.5){ lanzarConfeti(pct); }
+
+  document.getElementById("marca").textContent = marca;
+  document.getElementById("nota").textContent = nota + "  " + tipo;
+  document.getElementById("detalle").textContent = "Aciertos: " + aciertos + " de " + PREGUNTAS.length + "  ·  " + Math.round(pct * 100) + "%";
+  document.getElementById("estrellas").textContent = estrellas;
+  document.getElementById("mensaje").textContent = mensaje;
+  if (aciertos >= PREGUNTAS.length){ document.getElementById("mensaje").textContent = msjs[4] + " ¡30 de 30, perfecto!"; }
+  document.getElementById("statusEnvio").className = "status";
+
+  pantalla("resultado");
+  guardar();
+  setTimeout(function(){ despuesMarca(); }, 300);
+}
+
+var marcasTexto = ["💖","🌈","🎠","🤖","🍭","🎈","✨","💻","🫧","🎡","🍬","🎀"];
+function despuesMarca(){
+  var marca = document.getElementById("marca");
+  var max = 8, n = 0;
+  var iv = setInterval(function(){
+    marca.textContent = marcasTexto[Math.floor(Math.random() * marcasTexto.length)];
+    if (++n >= max){ clearInterval(iv); }
+  }, 220);
+}
+
+// ====== Confeti ======
+var confetiCtx = null, confetiFn;
+function lanzarConfeti(porciento){
+  var cv = document.getElementById("confeti");
+  confetiCtx = cv.getContext("2d");
+  cv.width = window.innerWidth; cv.height = window.innerHeight;
+  if (confetiFn){ cancelAnimationFrame(confetiFn); }
+  var max = Math.round(90 + porciento * 130);
+  var cols = ["#f472b6","#a78bfa","#60a5fa","#34d399","#fcd34d","#fb923c","#f43f5e"];
+  var pcs = [];
+  for (var i = 0; i < max; i++){
+    pcs.push({
+      x: Math.random() * cv.width,
+      y: -20 - Math.random() * cv.height * 0.4,
+      w: 6 + Math.random() * 8,
+      h: 8 + Math.random() * 10,
+      c: cols[Math.floor(Math.random() * cols.length)],
+      vy: 2 + Math.random() * 4,
+      vx: -1.2 + Math.random() * 2.4,
+      r: Math.random() * Math.PI,
+      vr: -0.15 + Math.random() * 0.3,
+      s: Math.random() * 1.6 + 0.6
+    });
+  }
+  function paso(){
+    confetiCtx.clearRect(0, 0, cv.width, cv.height);
+    var vivo = false;
+    for (var i = 0; i < pcs.length; i++){
+      var p = pcs[i];
+      p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      if (p.y < cv.height + 30 && p.y > -40){
+        vivo = true;
+        confetiCtx.save();
+        confetiCtx.translate(p.x, p.y);
+        confetiCtx.rotate(p.r);
+        confetiCtx.scale(p.s, p.s);
+        confetiCtx.fillStyle = p.c;
+        confetiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        confetiCtx.restore();
+      }
+    }
+    if (vivo && pcs.some(function(p){ return p.y < cv.height; })){
+      confetiFn = requestAnimationFrame(paso);
+    } else {
+      confetiCtx.clearRect(0, 0, cv.width, cv.height);
+    }
+  }
+  paso();
+}
+
+// ====== Recolectar y enviar ======
+function datosFinales(){
+  var datos = { timestamp: new Date().toISOString() };
+  for (var i = 0; i < CAMPOS.length; i++){
+    var k = CAMPOS[i];
+    if (k === "timestamp") continue;
+    if (k === "nombre"){ datos[k] = estado.nombre; }
+    else if (k === "grupo"){ datos[k] = estado.grupo; }
+    else if (k === "grado"){ datos[k] = "6to"; }
+    else if (k === "aciertos"){ datos[k] = calcularAciertos(); }
+    else { datos[k] = estado.respuestas[parseInt(k.slice(1), 10) - 1] || ""; }
+  }
+  return datos;
+}
+
+function descargar(datos){
+  var orden = {};
+  for (var i = 0; i < CAMPOS.length; i++){ orden[CAMPOS[i]] = datos[CAMPOS[i]] || ""; }
+  var blob = new Blob([JSON.stringify(orden, null, 2)], {type:"application/json"});
+  var a = document.createElement("a");
+  var nom = (datos.nombre || "alumno").replace(/[^a-z0-9áéíóúñ ]/gi, "").replace(/\s+/g, "_");
+  a.href = URL.createObjectURL(blob);
+  a.download = "diagnostico_6to_prim_" + nom + ".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+document.getElementById("btnRespaldo").addEventListener("click", function(){
+  descargar(datosFinales());
+  setStatus("statusEnvio", "Respaldo descargado. Entrégaselo a la profe si la red falla. 💾", "ok");
+});
+
+document.getElementById("btnEnviar").addEventListener("click", function(){
+  var d = datosFinales();
+  var btn = this;
+  if (!SCRIPT_URL){
+    descargar(d);
+    setStatus("statusEnvio", "Se descargó tu respaldo. Entrégaselo a la profe. 💾", "ok");
+    return;
+  }
+  btn.disabled = true;
+  setStatus("statusEnvio", "Enviando… 📡", "");
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: {"Content-Type": "text/plain;charset=utf-8"},
+    body: JSON.stringify(d)
+  }).then(function(r){ return r.json().catch(function(){ return {ok:true}; }); })
+    .then(function(res){
+      if (res && res.ok === false){ throw new Error(res.error || "error"); }
+      pantalla("listo");
+      try { localStorage.removeItem(CLAVE_STATE); } catch(e){}
+    })
+    .catch(function(){
+      btn.disabled = false;
+      descargar(d);
+      setStatus("statusEnvio", "No se pudo enviar (revisa la red). Se descargó un respaldo: entrégaselo a la profe.", "bad");
+    });
+});
+
+document.getElementById("btnRepetir").addEventListener("click", function(){
+  mezclarPreguntas();
+  estado = { v:1, nombre:estado.nombre, grupo:estado.grupo, idx:0, respuestas:[], mezcla: capturarMezcla() };
+  guardar();
+  pantalla("pregunta");
+  renderPregunta(0);
+});
+
+document.getElementById("btnCerrar").addEventListener("click", function(){
+  window.close();
+});
+
+// ====== Continuar partida guardada ======
+(function(){
+  var previo = cargar();
+  if (previo && previo.respuestas && previo.respuestas.length > 0){
+    var has = false;
+    for (var i = 0; i < previo.respuestas.length; i++){ if (previo.respuestas[i]){ has = true; break; } }
+    if (has){
+      if (confirm("¡Hola de nuevo " + previo.nombre + "! Tienes una misión sin terminar. ¿Quieres continuar?")){
+        estado = previo;
+        if (estado.mezcla){ aplicarMezcla(estado.mezcla); }
+        pantalla("pregunta");
+        renderPregunta(Math.min(estado.idx, PREGUNTAS.length - 1));
+      } else {
+        try { localStorage.removeItem(CLAVE_STATE); } catch(e){}
+      }
+    }
+  }
+})();
+</script>
+</body>
+</html>

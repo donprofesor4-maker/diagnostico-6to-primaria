@@ -1,10 +1,11 @@
 /**
- * Web app compartido para diagnósticos de Computación (4.º y 6.º primaria, 2.º secundaria).
+ * Web app compartido para diagnósticos de Computación (1.º y 2.º secundaria, 4.º y 6.º primaria).
  * Detecta el campo "grado" en el JSON y escribe en la pestaña correspondiente:
  *   - "4to" → pestaña "Respuestas"
- *   - "2do" → pestaña "Respuestas 2do Sec"
  *   - "6to" → pestaña "Respuestas" (misma que 4.º); guarda sus 30 respuestas y la
- *     columna "grado" (= "6to", posición 4, igual que el 2.º) para separarla después.
+ *     columna "grado" (= "6to", posición 4) para separarla después.
+ *   - "2do" → pestaña "Respuestas 2do Sec"
+ *   - "1ro" → pestaña "Respuestas 1ro Sec"
  *
  * Implementar como: Implementar > Nueva implementación > App web
  *   - Ejecutar como: Yo (tu cuenta)
@@ -22,6 +23,9 @@ var CAMPOS_2DO = ["timestamp","nombre","grupo","grado","r1","r2","r3","r4","r5",
 // que guarde TODAS sus respuestas y se separe por la columna "grado".
 var CAMPOS_6TO = CAMPOS_2DO;
 
+// 1.º: mismo esquema que el 2.º (30 respuestas + grado en posición 4).
+var CAMPOS_1RO = CAMPOS_2DO;
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
@@ -30,10 +34,12 @@ function doPost(e) {
     var grado = data.grado || "4to";
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheetName = (grado === "2do") ? "Respuestas 2do Sec" : "Respuestas";
+    var sheetName = (grado === "1ro") ? "Respuestas 1ro Sec" :
+                    (grado === "2do") ? "Respuestas 2do Sec" : "Respuestas";
     var sheet = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
 
-    var campos = (grado === "2do") ? CAMPOS_2DO :
+    var campos = (grado === "1ro") ? CAMPOS_1RO :
+                 (grado === "2do") ? CAMPOS_2DO :
                  (grado === "6to") ? CAMPOS_6TO : CAMPOS_4TO;
 
     if (sheet.getLastRow() === 0) {
@@ -57,5 +63,5 @@ function doPost(e) {
 }
 
 function doGet() {
-  return ContentService.createTextOutput('Diagnóstico activo (4.º y 6.º primaria, 2.º sec). Usa POST.');
+  return ContentService.createTextOutput('Diagnóstico activo (1.º y 2.º sec, 4.º y 6.º primaria). Usa POST.');
 }

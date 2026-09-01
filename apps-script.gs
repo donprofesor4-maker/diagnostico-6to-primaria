@@ -3,8 +3,8 @@
  * Detecta el campo "grado" en el JSON y escribe en la pestaña correspondiente:
  *   - "4to" → pestaña "Respuestas"
  *   - "2do" → pestaña "Respuestas 2do Sec"
- *   - "6to" → pestaña "Respuestas" (misma que 4.º); se distingue por la
- *     columna "grado" (al final de la fila, valor "6to") para separarla después.
+ *   - "6to" → pestaña "Respuestas" (misma que 4.º); guarda sus 30 respuestas y la
+ *     columna "grado" (= "6to", posición 4, igual que el 2.º) para separarla después.
  *
  * Implementar como: Implementar > Nueva implementación > App web
  *   - Ejecutar como: Yo (tu cuenta)
@@ -18,8 +18,9 @@ var CAMPOS_4TO = ["timestamp","nombre","grupo","r1","r2","r3","r4","r5","r6","r7
 var CAMPOS_2DO = ["timestamp","nombre","grupo","grado","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10",
   "r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29","r30","aciertos"];
 
-// 6.º: misma estructura que 4.º (las 24 primeras columnas alineadas) + grado al final.
-var CAMPOS_6TO = CAMPOS_4TO.concat(["grado"]);
+// 6.º: mismo esquema que el 2.º (30 respuestas + grado en posición 4), para
+// que guarde TODAS sus respuestas y se separe por la columna "grado".
+var CAMPOS_6TO = CAMPOS_2DO;
 
 function doPost(e) {
   var lock = LockService.getScriptLock();

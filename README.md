@@ -7,16 +7,16 @@ GitHub Pages con el GitHub de Don Profesor (`donprofesor4-maker`).
 
 Las respuestas se guardan en la **misma** hoja de Google del diagnóstico de 4.º
 ("Diagnóstico Informática 4to"), en la pestaña **`Respuestas`**. Cada fila del 6.º
-lleva la columna **`grado`** con el valor **`6to`** (al final de la fila), así se
-pueden separar de las de 4.º con un filtro. El de 2.º usa su propia pestaña
-(`Respuestas 2do Sec`) y no se toca.
+guarda sus 30 respuestas y lleva la columna **`grado`** con el valor **`6to`**
+(misma estructura que el 2.º), así se pueden separar de las de 4.º con un filtro.
+El de 2.º usa su propia pestaña (`Respuestas 2do Sec`) y no se toca.
 
 ## Archivos
 
 | Archivo | Descripción |
 |---|---|
 | `index.html` | Quiz autónomo (vanilla JS, sin dependencias; 30 reactivos con 4 opciones barajadas por intento) |
-| `apps-script.gs` / `Code.gs` | Código de Google Apps Script (backend que rutea por `grado`: "4to" y "6to" → pestaña `Respuestas`; "2do" → `Respuestas 2do Sec`. El 6.º añade la columna `grado`=`6to` al final de su fila para separarla después; crea la pestaña si no existe) |
+| `apps-script.gs` / `Code.gs` | Código de Google Apps Script (backend que rutea por `grado`: "4to" y "6to" → pestaña `Respuestas`; "2do" → `Respuestas 2do Sec`. El 6.º guarda sus 30 respuestas + columna `grado`=`6to`, igual que el 2.º, para separarla después; crea la pestaña si no existe) |
 
 ## Página viva
 
@@ -29,7 +29,7 @@ pueden separar de las de 4.º con un filtro. El de 2.º usa su propia pestaña
   por `grado`, incluido "6to"). El deployment se actualiza eligiendo **Nueva
   versión** sin cambiar el ID de implementación, así 4.º y 2.º siguen funcionado
   por la misma URL.
-- Hoja: "Diagnóstico Informática 4to" → pestaña `Respuestas` (fila del 6.º con `grado`=`6to` al final).
+- Hoja: "Diagnóstico Informática 4to" → pestaña `Respuestas` (fila del 6.º con `grado`=`6to`).
 - `SCRIPT_URL` en `index.html` apunta a la URL `/exec` compartida.
 
 ## Cómo conectar la hoja de respuestas (Google Sheets)

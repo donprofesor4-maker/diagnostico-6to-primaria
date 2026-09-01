@@ -3,7 +3,8 @@
  * Detecta el campo "grado" en el JSON y escribe en la pestaña correspondiente:
  *   - "4to" → pestaña "Respuestas"
  *   - "2do" → pestaña "Respuestas 2do Sec"
- *   - "6to" → pestaña "Respuestas 6to Prim"
+ *   - "6to" → pestaña "Respuestas" (misma que 4.º); se distingue por la
+ *     columna "grado" (al final de la fila, valor "6to") para separarla después.
  *
  * Implementar como: Implementar > Nueva implementación > App web
  *   - Ejecutar como: Yo (tu cuenta)
@@ -17,7 +18,8 @@ var CAMPOS_4TO = ["timestamp","nombre","grupo","r1","r2","r3","r4","r5","r6","r7
 var CAMPOS_2DO = ["timestamp","nombre","grupo","grado","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10",
   "r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29","r30","aciertos"];
 
-var CAMPOS_6TO = CAMPOS_2DO;
+// 6.º: misma estructura que 4.º (las 24 primeras columnas alineadas) + grado al final.
+var CAMPOS_6TO = CAMPOS_4TO.concat(["grado"]);
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
@@ -27,8 +29,7 @@ function doPost(e) {
     var grado = data.grado || "4to";
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheetName = (grado === "2do") ? "Respuestas 2do Sec" :
-                    (grado === "6to") ? "Respuestas 6to Prim" : "Respuestas";
+    var sheetName = (grado === "2do") ? "Respuestas 2do Sec" : "Respuestas";
     var sheet = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
 
     var campos = (grado === "2do") ? CAMPOS_2DO :
